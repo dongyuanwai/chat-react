@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import './App.less'
-import { Button ,Spin} from 'antd';
+import { Button ,Spin,message} from 'antd';
 import { AudioOutlined ,RedditOutlined} from '@ant-design/icons';
 import 'antd/dist/reset.css';
 
@@ -14,6 +14,13 @@ function App() {
   	const [inputValue, setInputValue] = useState<string>("")
 	const [answerList, setAnswerList] = useState<answerListType[]>([])
 	const preItem = useRef<HTMLDivElement>(null)
+
+	const [messageApi,contextHolder] = message.useMessage();
+	const configuration = new Configuration({
+		apiKey: "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",
+	});
+	const openai = new OpenAIApi(configuration);
+
 
 	const quize = ()=>{
 		console.log("提问",inputValue)
@@ -32,37 +39,37 @@ function App() {
 		getMessage(inputValue)
 	}
 
-	const configuration = new Configuration({
-		apiKey: "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",
-	});
-	const openai = new OpenAIApi(configuration);
 	const getMessage = async (questionText:string)=>{
 		openai.createCompletion({
 			model: "text-davinci-003",
 			prompt: questionText,
 			max_tokens: 600,
 			temperature: 1,
-		}).then((response  )=>{
-
-		// 打印 API 返回的结果
-		console.log(response,response.data.choices[0],answerList);
-
-		setAnswerList(answerList=>answerList.map((item,index)=>{
-				if(index<answerList.length-1){
-					return item
-				}else{
-					return {
-						type: 'answer',
-						content: response?.data?.choices[0]?.text?.replace(/\n{2}/, " "),
-						isFinshed: 1,
+		}).then((response )=>{
+			// 打印 API 返回的结果
+			console.log(response,response.data.choices[0],answerList);
+			setAnswerList(answerList=>answerList.map((item,index)=>{
+					if(index<answerList.length-1){
+						return item
+					}else{
+						return {
+							type: 'answer',
+							content: response?.data?.choices[0]?.text?.replace(/\n{2}/, " "),
+							isFinshed: 1,
+						}
 					}
-				}
-			}))
+				}))
+		}).catch((e)=>{
+			messageApi.open({
+				type: 'error',
+				content: '你的 Key 失效了！',
+			  });
 		})
 	}
 
   return (
     <div className="App">
+		{contextHolder}
 		<div className='input_box'>
 			<input type="text" className='input' value={inputValue} onChange={e=>setInputValue(e.target.value)}></input>
 			<Button 
