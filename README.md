@@ -1,5 +1,5 @@
 # chat-react
-使用openai接口开发在线chatgpt
+使用openai接口开发在线chatgpt-3.0
 
 ## 使用
 安装
